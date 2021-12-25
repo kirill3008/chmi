@@ -141,16 +141,36 @@ class System(object):
         self.gauss_modified()
         return self.rev 
 
+    @staticmethod
+    def abs_e(matrix):
+        s = 0
+        for i in range(matrix.shape[0]):
+            for j in range(matrix.shape[1]):
+                s += matrix[i, j]**2
+        return s**0.5
+
+
+    @staticmethod
+    def abs_m(matrix):
+        return np.max(np.sum(np.abs(matrix), axis=1))
+
 
     def get_cond(self):
-        def abs_m(matrix):
-            s = 0
-            for i in range(matrix.shape[0]):
-                for j in range(matrix.shape[1]):
-                    s += matrix[i, j]**2
-            return s**0.5
         return abs_m(self.matrix) * abs_m(self.get_rev())
 
+    def over_relaxation(self, w = 1, eps = 1e-3, limit = 10**6):
+        A = self.matrix.T @ self.matrix
+        f = self.matrix.T @ self.b
+        iteration = 0
+        x = np.zeros(self.matrix.shape[0])
+        while self.abs_e(A @ x + f.reshape(1, -1)) > eps:
+            for j in range(A.shape[0]):
+                x[j] = x[j] - (np.dot(A[j], x) + f[j]) * w / A[j][j]
+            iteration += 1
+            if iteration > limit:
+                print("conversion failed")
+                return
+        self.x = -x
 
 
 
@@ -158,15 +178,15 @@ class System(object):
 
 
 
-sys = System.big_matrix(1, 100, 4)
+
+sys = System.big_matrix(1, 50, 4)
 
 
+sys.gauss_modified()
+print(sys.x)
 
+sys.over_relaxation()
+print(sys.x)
 
-
-
-
-
-
-
+print(sys.matrix @ sys.x - sys.b)
 

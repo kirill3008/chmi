@@ -16,15 +16,15 @@ class System(object):
     def big_matrix(x, n, m):
         q = 1.001 - 2.0 * m * 0.001
         matrix = np.zeros((n,n), dtype = np.longdouble)
-        r = np.zeros((n), dtype = np.longdouble)
-        for i in range(n):
-            for j in range(n):
+        
+        for i in range(1, n + 1):
+            for j in range(1, n + 1):
                 if i == j:
                     matrix[i - 1, j - 1] = np.power(q - 1, i + j)
                 else:
                     matrix[i - 1, j - 1] = np.power(q, i + j) + 0.1 * (j - i)
 
-
+        r = np.zeros((n), dtype = np.longdouble)
         for i in range(1, n + 1):
             r[i - 1] = n * np.exp(x / i) * np.cos(x)
         return System(matrix, r)
@@ -97,6 +97,9 @@ class System(object):
             matrix[i] /= tmp
             rev[i] /= tmp
             r[i] /= tmp
+
+            if k != i:
+                tmp *= -1
             for j in range(i + 1, r.shape[0]):
                 r[j] -= r[i] * matrix[j, i]
                 rev[j] -= rev[i] * matrix[j, i]
@@ -139,15 +142,28 @@ class System(object):
         return self.rev 
 
 
+    def get_cond(self):
+        def abs_m(matrix):
+            s = 0
+            for i in range(matrix.shape[0]):
+                for j in range(matrix.shape[1]):
+                    s += matrix[i, j]**2
+            return s**0.5
+        return abs_m(self.matrix) * abs_m(self.get_rev())
 
 
-sys = System.from_examples(1)
 
-sys.gauss()
-print(sys.det)
 
-sys.gauss_modified()
-print(sys.det)
+
+
+
+
+sys = System.big_matrix(1, 100, 4)
+
+
+
+
+
 
 
 
